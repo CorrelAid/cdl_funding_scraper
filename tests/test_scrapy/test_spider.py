@@ -246,10 +246,10 @@ def test_parse_details_fail_19_12():
         "Richtlinie des Landes Hessen zur Innovationsförderung"
         in validated_item.description
     )
-    assert validated_item.funding_type == ["zuschuss"]
-    assert validated_item.funding_area == ["forschung_innovation_themenspezifisch"]
-    assert validated_item.funding_location == ["hessen"]
-    assert validated_item.eligible_applicants == ["unternehmen"]
+    assert validated_item.funding_type == ["Zuschuss"]
+    assert validated_item.funding_area == ["Forschung & Innovation (themenspezifisch)"]
+    assert validated_item.funding_location == ["Hessen"]
+    assert validated_item.eligible_applicants == ["Unternehmen"]
     assert validated_item.contact_info_email == "info@wibank.de"
     assert (
         validated_item.contact_info_institution

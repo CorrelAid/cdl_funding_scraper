@@ -1,5 +1,7 @@
 **Data is live again (Dec/11/25) after a few months of pausing. We were hoping for bugs on the website (duplicates, inconsistent result counts) to be fixed, but now added workarounds to the code.**
 
+> **Note (Apr 2026):** foerderdatenbank.de intermittently serves internal codes instead of display names for some fields. We added a `code_to_label` mapping in `spider.py` to normalize these. See [Known Issue](#known-issue-website-serving-internal-codes-instead-of-display-names) for details.
+
 # Funding Scraper
 
 The `Funding Scraper` project is a Python-based web scraping tool and pipeline developed to extract funding programs from the [Förderdatenbank website](https://www.foerderdatenbank.de/FDB/DE/Home/home.html) of the BMWE. 
@@ -27,6 +29,16 @@ In addition to those columns, the data contain additional meta columns:
 - `offline`: date when the funding program was not on the website anymore
 
 Dates correspond to the date of the pipeline run when changes were detected.
+
+## Known Issue: Website Serving Internal Codes Instead of Display Names
+
+Some detail pages on foerderdatenbank.de intermittently serve internal codes (e.g. `forschung_innovation_themenspezifisch`) instead of display names (e.g. `Forschung & Innovation (themenspezifisch)`) for the fields `funding_area`, `funding_type`, `funding_location`, and `eligible_applicants`. This appears to correlate with pages using ASCII field labels (`Foerderbereich`) instead of proper German (`Förderbereich`). The behavior is non-deterministic — the same page can serve codes on one request and display names on the next.
+
+This caused two problems:
+1. **Inconsistent data**: the same category could appear both as a code and a display name in the dataset.
+2. **Spurious SCD2 updates**: since these fields are part of the checksum, each flip between code and display name triggered a new version, inflating update counts.
+
+As of April 2026, the scraper normalizes all known codes to their display names via a `code_to_label` mapping in `spider.py`, extracted from the overview page's sidebar filters. The database and S3 exports were retroactively fixed.
 
 ## License
 

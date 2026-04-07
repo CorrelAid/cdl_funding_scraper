@@ -7,6 +7,70 @@ from funding_crawler.models import FundingProgramSchema
 from w3lib.url import canonicalize_url
 from pydantic import ValidationError
 
+# Mapping of internal codes to display names, extracted from the overview page sidebar filters.
+# Some detail pages serve these codes instead of the human-readable labels due to a website bug.
+code_to_label = {
+    # funding_area (Förderbereich)
+    "arbeit": "Arbeit",
+    "aus_weiterbildung": "Aus- & Weiterbildung",
+    "aussenwirtschaft": "Außenwirtschaft",
+    "beratung": "Beratung",
+    "corona": "Corona-Hilfe",
+    "digitalisierung": "Digitalisierung",
+    "energieeffizienz_erneuerbare_energien": "Energieeffizienz & Erneuerbare Energien",
+    "existenzgruendung_festigung": "Existenzgründung & -festigung",
+    "forschung_innovation_themenoffen": "Forschung & Innovation (themenoffen)",
+    "forschung_innovation_themenspezifisch": "Forschung & Innovation (themenspezifisch)",
+    "frauenfoerderung": "Frauenförderung",
+    "gesundheit_soziales": "Gesundheit & Soziales",
+    "infrastruktur": "Infrastruktur",
+    "kultur_medien_sport": "Kultur, Medien & Sport",
+    "landwirtschaft_laendliche_entwicklung": "Landwirtschaft & Ländliche Entwicklung",
+    "messen_ausstellungen": "Messen & Ausstellungen",
+    "mobilitaet": "Mobilität",
+    "regionalfoerderung": "Regionalförderung",
+    "smart_cities_regionen": "Smart Cities & Regionen",
+    "staedtebau_stadterneuerung": "Städtebau & Stadterneuerung",
+    "umwelt_naturschutz": "Umwelt- & Naturschutz",
+    "unternehmensfinanzierung": "Unternehmensfinanzierung",
+    "wohnungsbau_modernisierung": "Wohnungsbau & Modernisierung",
+    # funding_type (Förderart)
+    "beteiligung": "Beteiligung",
+    "buergschaft": "Bürgschaft",
+    "darlehen": "Darlehen",
+    "garantie": "Garantie",
+    "sonstige": "Sonstige",
+    "zuschuss": "Zuschuss",
+    # funding_location (Fördergebiet)
+    "_bundesweit": "bundesweit",
+    "baden_wuerttemberg": "Baden-Württemberg",
+    "bayern": "Bayern",
+    "berlin": "Berlin",
+    "brandenburg": "Brandenburg",
+    "bremen": "Bremen",
+    "de_ni": "Niedersachsen",
+    "de_st": "Sachsen-Anhalt",
+    "hamburg": "Hamburg",
+    "hessen": "Hessen",
+    "mecklenburg_vorpommern": "Mecklenburg-Vorpommern",
+    "nordrhein_westfalen": "Nordrhein-Westfalen",
+    "rheinland_pfalz": "Rheinland-Pfalz",
+    "saarland": "Saarland",
+    "sachsen": "Sachsen",
+    "schleswig_holstein": "Schleswig-Holstein",
+    "thueringen": "Thüringen",
+    # eligible_applicants (Förderberechtigte)
+    "bildungseinrichtung": "Bildungseinrichtung",
+    "existenzgruenderin": "Existenzgründer/in",
+    "forschungseinrichtung": "Forschungseinrichtung",
+    "hochschule": "Hochschule",
+    "kommune": "Kommune",
+    "oeffentliche_einrichtung": "Öffentliche Einrichtung",
+    "privatperson": "Privatperson",
+    "unternehmen": "Unternehmen",
+    "verband_vereinigung": "Verband/Vereinigung",
+}
+
 translate_map = {
     "Kurzzusammenfassung": "description",
     "Zusatzinfos": "more_info",
@@ -201,6 +265,7 @@ class FundingSpider(Spider):
             ]:
                 lst_str = dd.xpath("text()").get()
                 lst = lst_str.strip().split(", ") if lst_str else []
+                lst = [code_to_label.get(v, v) for v in lst]
                 dct[key] = lst if lst else None
 
             elif key == "funding_body":
