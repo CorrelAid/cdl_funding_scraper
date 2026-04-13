@@ -71,6 +71,10 @@ code_to_label = {
     "verband_vereinigung": "Verband/Vereinigung",
 }
 
+# Known display labels, used to reconstruct labels that contain the list separator ", "
+# (e.g. "Kultur, Medien & Sport" gets split incorrectly by a naive split on ", ").
+known_labels = set(code_to_label.values())
+
 translate_map = {
     "Kurzzusammenfassung": "description",
     "Zusatzinfos": "more_info",
@@ -264,8 +268,21 @@ class FundingSpider(Spider):
                 "eligible_applicants",
             ]:
                 lst_str = dd.xpath("text()").get()
-                lst = lst_str.strip().split(", ") if lst_str else []
-                lst = [code_to_label.get(v, v) for v in lst]
+                parts = lst_str.strip().split(", ") if lst_str else []
+                # Merge consecutive parts that form a known label containing ", "
+                # (e.g. "Kultur, Medien & Sport" would otherwise be split in two).
+                merged = []
+                i = 0
+                while i < len(parts):
+                    if i + 1 < len(parts):
+                        combined = parts[i] + ", " + parts[i + 1]
+                        if combined in known_labels:
+                            merged.append(combined)
+                            i += 2
+                            continue
+                    merged.append(parts[i])
+                    i += 1
+                lst = [code_to_label.get(v, v) for v in merged]
                 dct[key] = lst if lst else None
 
             elif key == "funding_body":
