@@ -67,7 +67,7 @@ We refer to the [imprint of foerderdatenbank.de](https://www.foerderdatenbank.de
     - New funding programs are added to the dataset.
     - Funding programs that are no longer on the website are retained in the dataset, but the date of their removal, or the last scraping date, is recorded.
 
-- The output from DLT is stored in a serverless Postgres database ([Neon](https://neon.tech/)) and transformed using a query (the DLT output contains one entry per update), so that in the end, there is one row per program.
+- The output from DLT is stored in a self-hosted Postgres database and transformed using a query (the DLT output contains one entry per update), so that in the end, there is one row per program.
 
 - The pipeline is orchestrated and operated with [Modal](https://modal.com/). It runs every two days at 2 AM (UTC).
 
@@ -118,7 +118,7 @@ The following describes the structure of the relevant folders and files.
    uv run pre-commit install
    ```
 
-5. To access modal, the serverless database and DigitalOcean, where the final dataset is uploaded to, either ask a CorrelAid admin for the credentials or use your own infrastructure by exporting the following environment variabels:
+5. To access modal, the database and DigitalOcean, where the final dataset is uploaded to, either ask a CorrelAid admin for the credentials or use your own infrastructure by exporting the following environment variabels:
     ```
      export DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID=""
      export DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY=""
