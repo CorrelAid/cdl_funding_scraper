@@ -11,11 +11,9 @@ import polars as pl
 import boto3
 from markdownify import markdownify as md
 import zipfile
-import subprocess
 from sqlalchemy import create_engine
 import os
 import modal
-from datetime import datetime
 
 license_content = """
 Inhalte von foerderdatenbank.de sind individuell lizensiert durch das Bundesministerium für Wirtschaft und Klimaschutz unter CC BY-ND 3.0 DE. 
@@ -29,12 +27,6 @@ image = (
         local_path="requirements.txt", remote_path="/root/requirements.txt", copy=True
     )
     .run_commands(
-        "apt-get update",
-        "apt-get install -y curl gnupg lsb-release zstd",
-        "sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
-        "curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg",
-        "apt-get update",
-        "apt-get install -y postgresql-client-17",
         "pip install uv && uv pip install --system -r /root/requirements.txt",
         "echo 'done'",
     )
@@ -50,8 +42,6 @@ app = modal.App(name="cdl_awo_funding_crawler", image=image)
 
 dataset_name = "foerderdatenbankdumpbackend"
 bucket_name = "foerderdatenbankdump"
-
-backup_bucket_name = "foerderdatenbankbackup"
 
 
 @app.function(
@@ -76,30 +66,6 @@ def crawl():
 
     engine = create_engine(postgres_conn_str)
 
-    # https://neon.com/docs/manage/backup-pg-dump
-    date = datetime.now().strftime("%Y%m%d_%H%M%S")
-    local_dump_file_name = "dump"
-    remote_dump_file_name = f"{local_dump_file_name}_{date}"
-
-    print("dumping...")
-    pg_dump_cmd = [
-        "/usr/bin/pg_dump",
-        "-Fc",
-        "-v",
-        "-d",
-        postgres_conn_str,
-        "-f",
-        local_dump_file_name,
-        "--compress=zstd:12",
-    ]
-    result = subprocess.run(pg_dump_cmd, capture_output=True)
-
-    if result.returncode != 0:
-        print(f"pg_dump failed with return code {result.returncode}")
-        print(f"STDERR: {result.stderr.decode('utf-8', errors='replace')}")
-        print(f"STDOUT: {result.stdout.decode('utf-8', errors='replace')}")
-        raise Exception(f"pg_dump failed with return code {result.returncode}")
-
     session = boto3.session.Session()
     client = session.client(
         "s3",
@@ -111,14 +77,6 @@ def crawl():
             "DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY"
         ),
     )
-
-    print(
-        f"Uploading {local_dump_file_name} to {remote_dump_file_name} in bucket {backup_bucket_name}"
-    )
-
-    client.upload_file(local_dump_file_name, backup_bucket_name, remote_dump_file_name)
-
-    os.remove(local_dump_file_name)
 
     dlt.config.register_provider(cfg_provider)
 
