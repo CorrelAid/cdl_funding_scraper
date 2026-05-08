@@ -346,12 +346,18 @@ class FundingSpider(Spider):
                 value = dd.xpath("text()").get()
                 dct[key] = value.strip() if value else None
 
-        url_parts = response.url.partition("Foerderprogramm/")
+        # Known path segments preceding the program slug. Some funding programs are served
+        # under /ExternerLink/ or /Foerdergeber/ instead of /Foerderprogramm/ or /Archiv/.
+        url_parts = ("", "", "")
+        for sep in ("Foerderprogramm/", "Archiv/", "ExternerLink/", "Foerdergeber/"):
+            url_parts = response.url.partition(sep)
+            if url_parts[1] != "":
+                break
 
-        if url_parts[1] == "":
-            url_parts = response.url.partition(
-                "Archiv/"
-            )  # e.g. 'https://www.foerderdatenbank.de/FDB/Content/DE/Archiv/innovativer-schiffbau-sichert-arbeitsplaetze.html'
+        if url_parts[1] == "" or url_parts[2] == "":
+            self.logger.warning(
+                f"Could not derive id_url from URL (no known path segment matched): {response.url}"
+            )
 
         foerderprogramm_url_id = (
             url_parts[2].replace("/", "-").replace(".html", "").lower()
