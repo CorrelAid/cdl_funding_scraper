@@ -1,4 +1,5 @@
 import hashlib
+from urllib.parse import urlparse, parse_qs
 from scrapy import Request, Spider
 from scrapy.exceptions import CloseSpider
 from datetime import datetime
@@ -123,6 +124,39 @@ class FundingSpider(Spider):
         Yields:
             Request: Requests for detailed program pages and the next pagination page.
         """
+        host = urlparse(response.url).netloc
+        if "perfdrive.com" in host:
+            retry_count = response.meta.get("retry_list", 0)
+            max_retries = 5
+            original_url = self._extract_original_url(
+                response.url
+            ) or response.meta.get("original_url")
+            if original_url is None:
+                self.logger.error(
+                    f"List page perfdrive redirect with no recoverable original URL: {response.url}"
+                )
+                return
+            if retry_count < max_retries:
+                self.logger.warning(
+                    f"List page hit perfdrive WAF: {original_url}, retrying ({retry_count + 1}/{max_retries})"
+                )
+                yield Request(
+                    url=original_url,
+                    callback=self.parse,
+                    meta={
+                        "retry_list": retry_count + 1,
+                        "original_url": original_url,
+                        "download_delay": 15 + retry_count * 15,
+                    },
+                    dont_filter=True,
+                    priority=-1,
+                )
+                return
+            self.logger.error(
+                f"List page perfdrive WAF after {max_retries} retries: {original_url}. Pagination broken."
+            )
+            return
+
         urls = response.css(
             'div.card--fundingprogram > p.card--title > a::attr("href")'
         ).extract()
@@ -180,6 +214,12 @@ class FundingSpider(Spider):
         if next_page is not None and next_page != "":
             yield response.follow(next_page, self.parse)
 
+    def _extract_original_url(self, perfdrive_url):
+        """Extract original target URL from Radware perfdrive challenge URL (`ssc` param)."""
+        qs = parse_qs(urlparse(perfdrive_url).query)
+        ssc = qs.get("ssc", [None])[0]
+        return ssc
+
     def parse_details(self, response):
         """
         Parse the response from a funding program detail page.
@@ -201,8 +241,45 @@ class FundingSpider(Spider):
         dct["title"] = dct["title"] if dct["title"] else None
 
         if not dct["title"]:
-            self.logger.warning(f"No title found on page: {response.url}")
-            raise ValueError(f"No title found on page: {response.url}")
+            host = urlparse(response.url).netloc
+            is_perfdrive = "perfdrive.com" in host
+            max_retries = 5
+            retry_count = response.meta.get("retry_no_title", 0)
+
+            if is_perfdrive:
+                original_url = self._extract_original_url(
+                    response.url
+                ) or response.meta.get("original_url")
+                if original_url is None:
+                    self.logger.error(
+                        f"Perfdrive redirect with no recoverable original URL: {response.url}"
+                    )
+                    raise ValueError(f"No title found on page: {response.url}")
+                target_url = original_url
+            else:
+                target_url = response.url
+                original_url = response.meta.get("original_url", response.url)
+
+            if retry_count < max_retries:
+                self.logger.warning(
+                    f"No title found (perfdrive={is_perfdrive}) for {original_url}, retrying ({retry_count + 1}/{max_retries})"
+                )
+                yield Request(
+                    url=target_url,
+                    callback=self.parse_details,
+                    meta={
+                        "retry_no_title": retry_count + 1,
+                        "original_url": original_url,
+                        "download_delay": 10 + retry_count * 10,
+                    },
+                    dont_filter=True,
+                    priority=-1,
+                )
+                return
+            self.logger.error(
+                f"No title found after {max_retries} retries on page: {original_url}"
+            )
+            raise ValueError(f"No title found on page: {original_url}")
 
         tab_names = response.xpath(
             "/html/body/main/div[2]/div/div[1]/h2/span//text()"

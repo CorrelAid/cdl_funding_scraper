@@ -67,7 +67,7 @@ We refer to the [imprint of foerderdatenbank.de](https://www.foerderdatenbank.de
     - New funding programs are added to the dataset.
     - Funding programs that are no longer on the website are retained in the dataset, but the date of their removal, or the last scraping date, is recorded.
 
-- The output from DLT is stored in a self-hosted Postgres database and transformed using a query (the DLT output contains one entry per update), so that in the end, there is one row per program.
+- The output from DLT is stored in a self-hosted Postgres database and transformed using a query (the DLT output contains one entry per update), so that in the end, there is one row per program. Database backups are handled automatically by the database hosting platform.
 
 - The pipeline is orchestrated and operated with [Modal](https://modal.com/). It runs every two days at 2 AM (UTC).
 
