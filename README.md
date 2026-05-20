@@ -1,6 +1,4 @@
-**Data is live again (Dec/11/25) after a few months of pausing. We were hoping for bugs on the website (duplicates, inconsistent result counts) to be fixed, but now added workarounds to the code.**
-
-> **Note (Apr 2026):** foerderdatenbank.de intermittently serves internal codes instead of display names for some fields. We added a `code_to_label` mapping in `spider.py` to normalize these. See [Known Issue](#known-issue-website-serving-internal-codes-instead-of-display-names) for details.
+**Currently scraping does not succeed due to the website adding bot blocking**
 
 # Funding Scraper
 
