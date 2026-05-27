@@ -1,4 +1,4 @@
-**Currently scraping does not succeed due to the website adding bot blocking**
+**The BMWE is about to publish an API endpoint for the Förderdatenbank and already allows downloading the data as xml: https://www.foerderdatenbank.de/FDB/DE/Service/FAQ/faq.html**. Therefore we will not continue maintaining and executing this scraper and have archived it.
 
 # Funding Scraper
 
