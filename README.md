@@ -1,4 +1,4 @@
-**The BMWE is about to publish an API endpoint for the Förderdatenbank and already allows downloading the data as xml: https://www.foerderdatenbank.de/FDB/DE/Service/FAQ/faq.html**. Therefore we will not continue maintaining and executing this scraper and have archived it.
+**The BMWE published an XML export endpoint for the Förderdatenbank. Therefore we will not continue maintaining and executing this web scraper and have archived it in favor of parsing the xml export at: https://github.com/CorrelAid/fdb-scraper**
 
 # Funding Scraper
 
