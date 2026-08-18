@@ -12,7 +12,7 @@ import os
 from funding_crawler.models import FundingProgramSchema
 
 dataset_name = "foerderdatenbankdumpbackend"
-bucket_name = "foerderdatenbankdump"
+bucket_name = "cdl-foerderdatenbank-dump"
 columns = list(FundingProgramSchema.__annotations__.keys())
 
 postgres_conn_str = os.getenv("POSTGRES_CONN_STR")

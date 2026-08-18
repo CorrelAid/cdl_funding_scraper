@@ -41,7 +41,7 @@ image = (
 app = modal.App(name="cdl_awo_funding_crawler", image=image)
 
 dataset_name = "foerderdatenbankdumpbackend"
-bucket_name = "foerderdatenbankdump"
+bucket_name = "cdl-foerderdatenbank-dump"
 
 
 @app.function(
