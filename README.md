@@ -11,8 +11,8 @@ Data should be updated automatically every two days between 2am and 3am (cron sy
 
 The data are stored as `.parquet` and `.csv` files, which can be downloaded via the following links:
 
-- **[Link to parquet data](https://foerderdatenbankdump.fra1.cdn.digitaloceanspaces.com/data/parquet_data.zip)** -> this file contains all available columns and information
-- **[Link to csv data](https://foerderdatenbankdump.fra1.cdn.digitaloceanspaces.com/data/csv_data.zip)** -> due to limitations of the csv format, this file does not include all available columns and list and struct data were converted to string.
+- **[Link to parquet data](https://cdl-foerderdatenbank-dump.fsn1.your-objectstorage.com/data/parquet_data.zip)** -> this file contains all available columns and information
+- **[Link to csv data](https://cdl-foerderdatenbank-dump.fsn1.your-objectstorage.com/data/csv_data.zip)** -> due to limitations of the csv format, this file does not include all available columns and list and struct data were converted to string.
 
 
 The data contains columns containing the the information for each funding program ("Förderprogramm") that is available on its individual detail page. 

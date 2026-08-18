@@ -7,9 +7,7 @@ from tqdm import tqdm
 
 
 def test_not_deleted():
-    data_url = (
-        "https://foerderdatenbankdump.fra1.cdn.digitaloceanspaces.com/data/data.zip"
-    )
+    data_url = "https://cdl-foerderdatenbank-dump.fsn1.your-objectstorage.com/data/parquet_data.zip"
     response = requests.get(data_url)
     response.raise_for_status()
 

@@ -3,7 +3,7 @@ import zipfile
 import io
 import polars as pl
 
-url = "https://foerderdatenbankdump.fra1.cdn.digitaloceanspaces.com/data/data.zip"
+url = "https://cdl-foerderdatenbank-dump.fsn1.your-objectstorage.com/data/parquet_data.zip"
 
 response = requests.get(url)
 response.raise_for_status()
